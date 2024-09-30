@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { IconChevronRight, IconCopy } from '@tabler/icons-react';
 import { ActionIcon, Button, Card, Group, NavLink, Text } from '@mantine/core';
 import classes from './JsonViewer.module.css';
@@ -8,18 +8,26 @@ interface JsonViewerProps {
   json: Record<string, unknown> | unknown[];
 }
 
+// Utility function to check if a value is a primitive
 const isPrimitive = (value: unknown): boolean =>
   value === null || ['string', 'number', 'boolean'].includes(typeof value);
 
+// Copy path to clipboard with feedback
 const handleCopyPath = (path: string) => {
   navigator.clipboard.writeText(path).then(() => {
     console.log(`Copied to clipboard: ${path}`);
   });
 };
 
+// Renders a single node of the JSON tree
 const renderNode = (key: string | number, value: unknown, path: string) => {
   const currentPath = path ? `${path}.${key}` : String(key);
-  const hasChildren = value && typeof value === 'object';
+  const hasChildren = value && typeof value === 'object' && value !== null;
+  const childrenCount = hasChildren
+    ? Array.isArray(value)
+      ? value.length
+      : Object.keys(value).length
+    : null;
 
   return (
     <NavLink
@@ -27,13 +35,7 @@ const renderNode = (key: string | number, value: unknown, path: string) => {
       label={
         <Group justify="flex-end" className={classes.show}>
           {hasChildren ? (
-            <Text c="dimmed">
-              [
-              {Array.isArray(value)
-                ? value.length
-                : Object.keys(value || {}).length}
-              ]
-            </Text>
+            <Text c="dimmed">[{childrenCount}]</Text>
           ) : (
             <Text c="dimmed" truncate="start">
               {String(value)}
@@ -107,6 +109,7 @@ const renderNode = (key: string | number, value: unknown, path: string) => {
   );
 };
 
+// Recursively renders the tree structure from a JSON object or array
 const renderTree = (node: unknown, path: string = ''): React.ReactNode => {
   if (Array.isArray(node)) {
     return node.map((item, index) => renderNode(index, item, path));
@@ -118,6 +121,7 @@ const renderTree = (node: unknown, path: string = ''): React.ReactNode => {
   return null; // Return null when there are no children
 };
 
+// Main JsonViewer component
 const JsonViewer: React.FC<JsonViewerProps> = ({ json }) => {
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
