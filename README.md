@@ -50,7 +50,7 @@ A React component that renders JSON data as a collapsible, hierarchical tree str
 
 ## Demo
 
-Check out a live demo of the JSON Viewer [here](#).
+Check out a live demo of the JSON Viewer [here](https://stackblitz.com/~/github.com/matoslucas/JsonViewer).
 
 ## Installation
 
